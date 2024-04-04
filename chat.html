@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+    
+       body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+    }
+
+       #chatBox {
+        max-width: 100%;
+        margin: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+      #chatHeader {
+        background-color: #075e54;
+        color: #fff;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+    }
+
+      #callButtons {
+        display: flex;
+    }
+
+     #callButtons button {
+        background-color: transparent;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        margin-left: 10px;
+    }
+
+     #callButtons button:hover {
+        color: #ccc;
+    }
+
+     #additionalFunctionalities {
+        display: flex;
+        align-items: center;
+    }
+
+     #additionalFunctionalities button {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #fff;
+    }
+
+     #additionalFunctionalities button:hover {
+        color: #ccc;
+    }
+
+     #activeUsers {
+        display: none;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+     #activeUsersList {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+     #activeUsersList li {
+        margin-bottom: 10px;
+    }
+
+     #messages {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+ 
+     #messages li {
+        margin-bottom: 10px;
+    }
+
+     .message {
+        max-width: 70%;
+        border-radius: 10px;
+        padding: 10px;
+        position: relative;
+        word-wrap: break-word;
+    }
+
+     .own-message {
+        background-color: #dcf8c6;
+        margin-left: auto;
+    }
+
+     .other-message {
+        background-color: #f0f0f0;
+        margin-right: auto;
+    }
+
+     .message p {
+        margin: 0;
+        font-size: 16px;
+    }
+
+     #messageForm {
+        display: flex;
+        align-items: center;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-top: 1px solid #ccc;
+    }
+
+     #messageInput {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 20px;
+        outline: none;
+    }
+
+     #messageInput:focus {
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+     #messageForm button {
+        background-color: #075e54;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        margin-left: 10px;
+        cursor: pointer;
+    }
+
+     #messageForm button:hover {
+        background-color: #054a44;
+    }
+
+     #mediaButton {
+        background-image: url('media_icon.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 40px;
+        height: 40px;
+    }
+
+     #voiceMailButton {
+        background-image: url('voice_mail_icon.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 40px;
+        height: 40px;
+    }
+
+     @media screen and (max-width: 768px) {
+     #chatBox {
+        margin: 10px;
+    }
+}
+
+     @media screen and (max-width: 480px) {
+     #chatBox {
+        margin: 5px;
+    }
+}
+
+</style>
+
+</head>
+<body>
+    <!-- Chat Box -->
+    <div id="chatBox">
+        <!-- Chat Header with Call Buttons -->
+        <div id="chatHeader">
+            <div id="callButtons">
+                <button id="audioCallBtn">📞</button>
+                <button id="videoCallBtn">📹</button>
+            </div>
+            <div id="additionalFunctionalities">
+                <input type="text" id="searchBox" placeholder="Search">
+                <button id="searchBtn">Search</button>
+                <button id="additionalFunctionalitiesBtn">...</button>
+            </div>
+        </div>
+
+        <!-- Active Users Section -->
+        <div id="activeUsers">
+            <h3>Active Users</h3>
+            <ul id="activeUsersList"></ul>
+        </div>
+
+        <!-- Chat Messages Display -->
+        <ul id="messages"></ul>
+
+        <!-- Chat Input Form -->
+        <form id="messageForm">
+            <input id="messageInput" autocomplete="off" placeholder="Type your message..." />
+            <button id="voiceMailButton"></button>
+            <button id="messageSendBtn">➤</button>
+            <button id="mediaButton"></button>
+        </form>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Join the chat room
+        socket.emit('join', 'Username');
+
+        // Handle receiving messages
+        socket.on('messageReceived', (message) => {
+            const li = document.createElement('li');
+            li.textContent = message;
+            document.getElementById('messages').appendChild(li);
+        });
+
+        // Handle audio call button click
+        document.getElementById('audioCallBtn').addEventListener('click', () => {
+            // Implement logic to initiate audio call
+            // Declare variables for peer connection and local audio stream
+let peerConnection;
+let localStream;
+
+// Get reference to the local audio element
+const localAudio = document.getElementById('localAudio');
+
+// Function to start the local audio stream
+async function startLocalAudio() {
+    try {
+        // Get user media (audio only)
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Display local audio stream on the audio element
+        localAudio.srcObject = stream;
+        // Store local stream
+        localStream = stream;
+    } catch (error) {
+        console.error('Error accessing audio devices:', error);
+    }
+}
+
+// Function to create and configure a peer connection
+function createPeerConnection() {
+    // Create peer connection object
+    peerConnection = new RTCPeerConnection();
+    
+    // Add local stream to peer connection
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    
+    // Set up event handlers for ICE candidates and incoming audio streams
+    peerConnection.onicecandidate = handleICECandidate;
+    peerConnection.ontrack = handleTrack;
+}
+
+// Function to handle ICE candidates
+function handleICECandidate(event) {
+    if (event.candidate) {
+        // Send ICE candidate to the remote peer
+        socket.emit('iceCandidate', { targetSocketId: targetSocketId, candidate: event.candidate });
+    }
+}
+
+// Function to handle incoming audio streams
+function handleTrack(event) {
+    // Play remote audio stream
+    const remoteAudio = document.getElementById('remoteAudio');
+    remoteAudio.srcObject = event.streams[0];
+    remoteAudio.play();
+}
+
+// Function to initiate an audio call
+function initiateAudioCall() {
+    // Create and configure peer connection
+    createPeerConnection();
+    
+    // Create offer
+    peerConnection.createOffer()
+        .then(offer => {
+            // Set local description
+            return peerConnection.setLocalDescription(offer);
+        })
+        .then(() => {
+            // Send offer to the remote peer
+            socket.emit('offer', { targetSocketId: targetSocketId, offer: peerConnection.localDescription });
+        })
+        .catch(error => console.error('Error creating offer:', error));
+}
+
+// Function to accept an audio call
+function acceptAudioCall() {
+    // Create and configure peer connection
+    createPeerConnection();
+    
+    // Set remote description
+    peerConnection.setRemoteDescription(remoteOffer)
+        .then(() => {
+            // Create answer
+            return peerConnection.createAnswer();
+        })
+        .then(answer => {
+            // Set local description
+            return peerConnection.setLocalDescription(answer);
+        })
+        .then(() => {
+            // Send answer to the remote peer
+            socket.emit('answer', { targetSocketId: targetSocketId, answer: peerConnection.localDescription });
+        })
+        .catch(error => console.error('Error creating or setting answer:', error));
+}
+
+// Function to handle incoming offer
+socket.on('offer', (data) => {
+    // Save remote offer
+    remoteOffer = data.offer;
+    // Prompt user to accept or reject the call
+    // If accepted, call acceptAudioCall() function
+});
+
+// Function to handle incoming answer
+socket.on('answer', (data) => {
+    // Set remote description
+    peerConnection.setRemoteDescription(data.answer)
+        .catch(error => console.error('Error setting remote description:', error));
+});
+
+// Function to handle incoming ICE candidates
+socket.on('iceCandidate', (data) => {
+    // Add ICE candidate to the peer connection
+    peerConnection.addIceCandidate(data.candidate)
+        .catch(error => console.error('Error adding ICE candidate:', error));
+});
+
+        });
+
+        // Handle video call button click
+        document.getElementById('videoCallBtn').addEventListener('click', () => {
+            // Implement logic to initiate video call
+            // Declare variables for peer connection and local video stream
+let peerConnection;
+let localStream;
+
+// Get reference to the local video element
+const localVideo = document.getElementById('localVideo');
+
+// Function to start the local video stream
+async function startLocalVideo() {
+    try {
+        // Get user media (video and audio)
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        // Display local video stream on the video element
+        localVideo.srcObject = stream;
+        // Store local stream
+        localStream = stream;
+    } catch (error) {
+        console.error('Error accessing media devices:', error);
+    }
+}
+
+// Function to create and configure a peer connection
+function createPeerConnection() {
+    // Create peer connection object
+    peerConnection = new RTCPeerConnection();
+    
+    // Add local stream to peer connection
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    
+    // Set up event handlers for ICE candidates and incoming media streams
+    peerConnection.onicecandidate = handleICECandidate;
+    peerConnection.ontrack = handleTrack;
+}
+
+// Function to handle ICE candidates
+function handleICECandidate(event) {
+    if (event.candidate) {
+        // Send ICE candidate to the remote peer
+        socket.emit('iceCandidate', { targetSocketId: targetSocketId, candidate: event.candidate });
+    }
+}
+
+// Function to handle incoming media streams
+function handleTrack(event) {
+    // Display remote video stream on a video element
+    const remoteVideo = document.getElementById('remoteVideo');
+    remoteVideo.srcObject = event.streams[0];
+}
+
+// Function to initiate a video call
+function initiateVideoCall() {
+    // Create and configure peer connection
+    createPeerConnection();
+    
+    // Create offer
+    peerConnection.createOffer()
+        .then(offer => {
+            // Set local description
+            return peerConnection.setLocalDescription(offer);
+        })
+        .then(() => {
+            // Send offer to the remote peer
+            socket.emit('offer', { targetSocketId: targetSocketId, offer: peerConnection.localDescription });
+        })
+        .catch(error => console.error('Error creating offer:', error));
+}
+
+// Function to accept a video call
+function acceptVideoCall() {
+    // Create and configure peer connection
+    createPeerConnection();
+    
+    // Set remote description
+    peerConnection.setRemoteDescription(remoteOffer)
+        .then(() => {
+            // Create answer
+            return peerConnection.createAnswer();
+        })
+        .then(answer => {
+            // Set local description
+            return peerConnection.setLocalDescription(answer);
+        })
+        .then(() => {
+            // Send answer to the remote peer
+            socket.emit('answer', { targetSocketId: targetSocketId, answer: peerConnection.localDescription });
+        })
+        .catch(error => console.error('Error creating or setting answer:', error));
+}
+
+// Function to handle incoming offer
+socket.on('offer', (data) => {
+    // Save remote offer
+    remoteOffer = data.offer;
+    // Prompt user to accept or reject the call
+    // If accepted, call acceptVideoCall() function
+});
+
+// Function to handle incoming answer
+socket.on('answer', (data) => {
+    // Set remote description
+    peerConnection.setRemoteDescription(data.answer)
+        .catch(error => console.error('Error setting remote description:', error));
+});
+
+// Function to handle incoming ICE candidates
+socket.on('iceCandidate', (data) => {
+    // Add ICE candidate to the peer connection
+    peerConnection.addIceCandidate(data.candidate)
+        .catch(error => console.error('Error adding ICE candidate:', error));
+});
+
+        });
+
+        // Handle voice mail button click
+        document.getElementById('voiceMailButton').addEventListener('click', () => {
+            // Implement logic to start recording voice message
+        });
+
+        // Handle media button click
+        document.getElementById('mediaButton').addEventListener('click', () => {
+            // Implement logic to select and send media file
+        });
+
+        // Handle additional functionalities button click
+        document.getElementById('additionalFunctionalitiesBtn').addEventListener('click', () => {
+            // Implement logic to toggle additional functionalities menu
+            const activeUsers = document.getElementById('activeUsers');
+            activeUsers.style.display = activeUsers.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Handle search button click
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            // Implement logic to search for users
+        });
+
+        // Handle sending messages
+        document.getElementById('messageForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+
+            try {
+                const response = await fetch('/send-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+
+                messageInput.value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                // Handle error
+            }
+        });
+
+        // Handle active users button click
+        document.getElementById('activeUsersBtn').addEventListener('click', () => {
+            const activeUsers = document.getElementById('activeUsers');
+            activeUsers.style.display = activeUsers.style.display === 'none' ? 'block' : 'none';
+        });
+    </script>
+</body>
+</html>
