@@ -76,7 +76,7 @@ const authenticateUser = (req, res, next) => {
 
 module.exports = authenticateUser;
 
-//Signup logic
+// Signup route
 app.post('/signup', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -101,7 +101,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-
+// Login route
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -117,6 +117,7 @@ app.post('/login', async (req, res) => {
     if (!validPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+
 
     // Generate a JWT token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
